@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Link Details</title>
+</head>
+<body>
+    <h1>Link Details</h1>
+    <table border="1">
+        <tr>
+            <th> Time </th>
+            <th> Type </th>
+            <th> Person </th>
+            <th> Link </th>
+            <th> ActType </th>
+            <th> LegMode </th>
+            <th> DvrpVehicle </th>
+            <th> DvrpVehicle </th>
+            <th> TaskType </th>
+            <th> TaskIndex </th>
+            <th> DvrpMode </th>
+            <th> X </th>
+            <th> Y </th>
+            <th> Mode </th>
+            <th> Request </th>
+            <th> Vehicle </th>
+            <th> Amount </th>
+            <th> Purpose </th>
+            <th> Distance </th>
+            <th> NetworkMode </th>
+            <th> RelativePosition </th>
+        </tr>
+        {% for result in link_details  %}
+        <tr>
+            <td>{{ result[0] }}</td>
+            <td>{{ result[1] }}</td>
+            <td>{{ result[2] }}</td>
+            <td>{{ result[3] }}</td>
+            <td>{{ result[4] }}</td>
+            <td>{{ result[5] }}</td>
+            <td>{{ result[6] }}</td>
+            <td>{{ result[7] }}</td>
+            <td>{{ result[8] }}</td>
+            <td>{{ result[9] }}</td>
+            <td>{{ result[10] }}</td>
+            <td>{{ result[11] }}</td>
+            <td>{{ result[12] }}</td>
+            <td>{{ result[13] }}</td>
+            <td>{{ result[14] }}</td>
+            <td>{{ result[15] }}</td>
+            <td>{{ result[16] }}</td>
+            <td>{{ result[17] }}</td>
+            <td>{{ result[18] }}</td>
+            <td>{{ result[19] }}</td>
+            <td>{{ result[20] }}</td>
+            <td>{{ result[21] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
