@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transportation Search</title>
+</head>
+<body>
+    <h1>Transportation Search</h1>
+    <form action="/search" method="post">
+        <label for="search_option">Search by:</label>
+        <select id="search_option" name="search_option" required>
+            <option value="empty">---</option>
+            <option value="person_id">Person ID</option>
+            <option value="link_id">Link ID</option>
+            <option value="time_range">Time Range</option>
+        </select>
+        <br>
+
+        <!-- Display input for Person ID only when 'Person ID' is selected -->
+        <div id="person_id_input" style="display: none;">
+            <label for="person_value">Enter Person ID:</label>
+            <input type="text" id="person_value" name="person_value">
+        </div>
+
+        <!-- Display input for Link ID only when 'Link ID' is selected -->
+        <div id="link_id_input" style="display: none;">
+            <label for="link_value">Enter Link ID:</label>
+            <input type="text" id="link_value" name="link_value">
+        </div>
+
+        <!-- Display input fields for start and end times only when 'Time Range' is selected -->
+        <div id="time_range_inputs" style="display: none;">
+            <label for="search_value">Enter Link ID:</label>
+            <input type="text" id="search_value" name="search_value">
+            <label for="start_time">Start Time:</label>
+            <input type="time" id="start_time" name="start_time">
+
+            <label for="end_time">End Time:</label>
+            <input type="time" id="end_time" name="end_time">
+        </div>
+
+        <button type="submit">Search</button>
+    </form>
+
+    <script>
+        // Show/hide input fields based on selected search option
+        document.getElementById('search_option').addEventListener('change', function() {
+            const personIdInput = document.getElementById('person_id_input');
+            const linkIdInput = document.getElementById('link_id_input');
+            const timeRangeInputs = document.getElementById('time_range_inputs');
+
+
+            if (this.value === 'person_id') {
+                personIdInput.style.display = 'block';
+                linkIdInput.style.display = 'none';
+                timeRangeInputs.style.display = 'none';
+            } else if (this.value === 'link_id') {
+                personIdInput.style.display = 'none';
+                linkIdInput.style.display = 'block';
+                timeRangeInputs.style.display = 'none';
+            } else if (this.value === 'time_range') {
+                personIdInput.style.display = 'none';
+                linkIdInput.style.display = 'none';
+                timeRangeInputs.style.display = 'block';
+            } else {
+                personIdInput.style.display = 'none';
+                linkIdInput.style.display = 'none';
+                timeRangeInputs.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
