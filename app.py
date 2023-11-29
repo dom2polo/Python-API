@@ -34,6 +34,7 @@ def search():
     elif search_option == 'link_id':
         results = search_events_by_link_id(link_value)
     elif search_option == 'time_range':
+        search_value = request.form['search_value']
         start_time = request.form['start_time']
         end_time = request.form['end_time']
         results = search_events_by_time_range(search_value, start_time, end_time)
@@ -52,64 +53,102 @@ def search_events_by_person_id(person_id):
     cursor = conn.cursor()
 
     query = f"""
-        SELECT
-            [Time],
-            [Type],
-            [Person],
-            [Amount],
-            [Purpose],
-            [TransactionPartner],
-            NULL AS [Link],
-            NULL AS [X],
-            NULL AS [Y],
-            NULL AS [ActType]
-        FROM
-            [dbo].[PersonMoney]
-        WHERE
-            [Person] = ?
+
+        Select [Time], [Type], [Person], [Link], [ActType], NULL AS LegMode, NULL AS DvrpVehicle, NULL AS TaskType, NULL AS TaskIndex, NULL AS DvrpMode, NULL AS X, NULL AS Y, NULL AS Mode, NULL AS Request, NULL AS Vehicle, NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, NULL AS NetworkMode, NULL AS RelativePosition
+        FROM [dbo].[ActEnd]
+        WHERE [Person] = ?
 
         UNION ALL
 
-        SELECT
-            [Time],
-            [Type],
-            [Person],
-            NULL AS [Amount],
-            NULL AS [Purpose],
-            NULL AS [TransactionPartner],
-            [Link],
-            NULL AS [X],
-            NULL AS [Y],
-            [ActType]
-        FROM
-            [dbo].[ActEnd]
-        WHERE
-            [Person] = ?
+        Select [Time], [Type], [Person], [Link], [ActType], NULL AS LegMode, NULL AS DvrpVehicle, NULL AS TaskType, NULL AS TaskIndex, NULL AS DvrpMode, [X], [Y], NULL AS Mode, NULL AS Request, NULL AS Vehicle, NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, NULL AS NetworkMode, NULL AS RelativePosition
+        FROM [dbo].[ActStart]
+        WHERE [Person] = ?
 
         UNION ALL
 
-        SELECT
-            [Time],
-            [Type],
-            [Person],
-            NULL AS [Amount],
-            NULL AS [Purpose],
-            NULL AS [TransactionPartner],
-            [Link],
-            [X],
-            [Y],
-            [ActType]
-        FROM
-            [dbo].[ActStart]
-        WHERE
-            [Person] = ?
-            
-        ORDER BY
-            [Time]
+        Select [Time], [Type], [Person], [Link], NULL AS ActType, [LegMode], NULL AS DvrpVehicle, NULL AS TaskType, NULL AS TaskIndex, NULL AS DvrpMode, NULL AS X, NULL AS Y, NULL AS Mode, NULL AS Request, NULL AS Vehicle, NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, NULL AS NetworkMode, NULL AS RelativePosition
+        FROM [dbo].[Arrival]
+        WHERE [Person] = ?
+
+        UNION ALL
+
+        Select [Time], [Type], [Person], [Link], NULL AS ActType, [LegMode], NULL AS DvrpVehicle, NULL AS TaskType, NULL AS TaskIndex, NULL AS DvrpMode, NULL AS X, NULL AS Y, NULL AS Mode, NULL AS Request, NULL AS Vehicle, NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, NULL AS NetworkMode, NULL AS RelativePosition
+        FROM [dbo].[Departure]
+        WHERE [Person] = ?
+
+        UNION ALL
+
+        Select [Time], [Type], [Person], [Link], NULL AS ActType, NULL AS LegMode, [DvrpVehicle], [TaskType], [TaskIndex], [DvrpMode], NULL AS X, NULL AS Y, NULL AS Mode, NULL AS Request, NULL AS Vehicle, NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, NULL AS NetworkMode, NULL AS RelativePosition
+        FROM [dbo].[DvrpTaskEnded]
+        WHERE [Person] = ?
+
+        UNION ALL
+
+        Select [Time], [Type], [Person], [Link], NULL AS ActType, NULL AS LegMode, [DvrpVehicle], [TaskType], [TaskIndex], [DvrpMode], NULL AS X, NULL AS Y, NULL AS Mode, NULL AS Request, NULL AS Vehicle, NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, NULL AS NetworkMode, NULL AS RelativePosition
+        FROM [dbo].[DvrpTaskStarted]
+        WHERE [Person] = ?
+
+
+        UNION ALL
+
+        Select [Time], [Type], [Person], NULL AS Link,  NULL AS ActType, NULL AS LegMode, NULL AS DvrpVehicle, NULL AS TaskType, NULL AS TaskIndex, NULL AS DvrpMode, NULL AS X, NULL AS Y, [Mode], [Request], [Vehicle], NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, NULL AS NetworkMode, NULL AS RelativePosition
+        FROM [dbo].[PassengerDroppedOff]
+        WHERE [Person] = ?
+
+        UNION ALL
+
+        Select [Time], [Type], [Person], NULL AS Link,  NULL AS ActType, NULL AS LegMode, NULL AS DvrpVehicle, NULL AS TaskType, NULL AS TaskIndex, NULL AS DvrpMode, NULL AS X, NULL AS Y, [Mode], [Request], [Vehicle], NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, NULL AS NetworkMode, NULL AS RelativePosition
+        FROM [dbo].[PassengerPickedUp]
+        WHERE [Person] = ?
+
+        UNION ALL
+
+        Select [Time], [Type], [Person], NULL AS Link,  NULL AS ActType, NULL AS LegMode, NULL AS DvrpVehicle, NULL AS TaskType, NULL AS TaskIndex, NULL AS DvrpMode, NULL AS X, NULL AS Y, NULL AS Mode, NULL AS Request, [Vehicle], NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, NULL AS NetworkMode, NULL AS RelativePosition
+        FROM [dbo].[PersonEntersVehicle]
+        WHERE [Person] = ?
+
+        UNION ALL
+
+        Select [Time], [Type], [Person], NULL AS Link,  NULL AS ActType, NULL AS LegMode, NULL AS DvrpVehicle, NULL AS TaskType, NULL AS TaskIndex, NULL AS DvrpMode, NULL AS X, NULL AS Y, NULL AS Mode, NULL AS Request, [Vehicle], NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, NULL AS NetworkMode, NULL AS RelativePosition
+        FROM [dbo].[PersonLeavesVehicle]
+        WHERE [Person] = ?
+
+        UNION ALL
+
+        Select [Time], [Type], [Person], NULL AS Link, NULL AS ActType, NULL AS LegMode, NULL AS DvrpVehicle, NULL AS TaskType, NULL AS TaskIndex, NULL AS DvrpMode, NULL AS X, NULL AS Y, NULL AS Mode, NULL AS Request, NULL AS Vehicle, [Amount], [Purpose], [TransactionPartner], NULL AS Distance, NULL AS NetworkMode, NULL AS RelativePosition
+        FROM [dbo].[PersonMoney]
+        WHERE [Person] = ?
+
+        UNION ALL
+
+        Select [Time], [Type], [Person], NULL AS Link, NULL AS ActType, NULL AS LegMode, NULL AS DvrpVehicle, NULL AS TaskType, NULL AS TaskIndex, NULL AS DvrpMode, NULL AS X, NULL AS Y, [Mode], NULL AS Request, NULL AS Vehicle, NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, [Distance], NULL AS NetworkMode, NULL AS RelativePosition
+        FROM [dbo].[Travelled]
+        WHERE [Person] = ?
+
+        UNION ALL
+
+        Select [Time], [Type], [Person], [Link], NULL AS ActType, NULL AS LegMode, NULL AS DvrpVehicle, NULL AS TaskType, NULL AS TaskIndex, NULL AS DvrpMode, NULL AS X, NULL AS Y, NULL AS Mode, NULL AS Request, [Vehicle], NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, [NetworkMode], [RelativePosition]
+        FROM [dbo].[VehicleEntersTraffic]
+        WHERE [Person] = ?
+
+        UNION ALL
+
+        Select [Time], [Type], [Person], [Link],  NULL AS ActType, NULL AS LegMode, NULL AS DvrpVehicle, NULL AS TaskType, NULL AS TaskIndex, NULL AS DvrpMode, NULL AS X, NULL AS Y, NULL AS Mode, NULL AS Request, [Vehicle], NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, [NetworkMode], [RelativePosition]
+        FROM [dbo].[VehicleLeavesTraffic]
+        WHERE [Person] = ?
+
+        ORDER BY [Time];
+
     """
 
-    cursor.execute(query, (person_id, person_id, person_id))
+    # 10 parameters supplied 
+    parameters = (person_id,) * 14
+
+    cursor.execute(query, parameters)
     results = cursor.fetchall()
+
+    # Close the cursor after fetching results
+    cursor.close()
 
     # Convert [Time] to hours, minutes, seconds
     results = [(seconds_to_hms(row[0]), *row[1:]) for row in results]
@@ -121,93 +160,166 @@ def search_events_by_link_id(link_id):
 
     query = f"""
 
-        SELECT
-            [Time],
-            [Type],
-            [Person],
-            NULL AS [Amount],
-            NULL AS [Purpose],
-            NULL AS [TransactionPartner],
-            [Link],
-            NULL AS [X],
-            NULL AS [Y],
-            [ActType]
-        FROM
-            [dbo].[ActEnd]
-        WHERE
-            [Link] = ?
+        Select [Time], [Type], [Person], [Link], [ActType], NULL AS LegMode, NULL AS DvrpVehicle, NULL AS TaskType, NULL AS TaskIndex, NULL AS DvrpMode, NULL AS X, NULL AS Y, NULL AS Mode, NULL AS Request, NULL AS Vehicle, NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, NULL AS NetworkMode, NULL AS RelativePosition
+        FROM [dbo].[ActEnd]
+        WHERE [Link] = ?
 
         UNION ALL
 
-        SELECT
-            [Time],
-            [Type],
-            [Person],
-            NULL AS [Amount],
-            NULL AS [Purpose],
-            NULL AS [TransactionPartner],
-            [Link],
-            [X],
-            [Y],
-            [ActType]
-        FROM
-            [dbo].[ActStart]
-        WHERE
-            [Link] = ?
-            
-        ORDER BY
-            [Time]
+        Select [Time], [Type], [Person], [Link], [ActType], NULL AS LegMode, NULL AS DvrpVehicle, NULL AS TaskType, NULL AS TaskIndex, NULL AS DvrpMode, [X], [Y], NULL AS Mode, NULL AS Request, NULL AS Vehicle, NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, NULL AS NetworkMode, NULL AS RelativePosition
+        FROM [dbo].[ActStart]
+        WHERE [Link] = ?
+
+        UNION ALL
+
+        Select [Time], [Type], [Person], [Link], NULL AS ActType, [LegMode], NULL AS DvrpVehicle, NULL AS TaskType, NULL AS TaskIndex, NULL AS DvrpMode, NULL AS X, NULL AS Y, NULL AS Mode, NULL AS Request, NULL AS Vehicle, NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, NULL AS NetworkMode, NULL AS RelativePosition
+        FROM [dbo].[Arrival]
+        WHERE [Link] = ?
+
+        UNION ALL
+
+        Select [Time], [Type], [Person], [Link], NULL AS ActType, [LegMode], NULL AS DvrpVehicle, NULL AS TaskType, NULL AS TaskIndex, NULL AS DvrpMode, NULL AS X, NULL AS Y, NULL AS Mode, NULL AS Request, NULL AS Vehicle, NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, NULL AS NetworkMode, NULL AS RelativePosition
+        FROM [dbo].[Departure]
+        WHERE [Link] = ?
+
+        UNION ALL
+
+        Select [Time], [Type], [Person], [Link], NULL AS ActType, NULL AS LegMode, [DvrpVehicle], [TaskType], [TaskIndex], [DvrpMode], NULL AS X, NULL AS Y, NULL AS Mode, NULL AS Request, NULL AS Vehicle, NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, NULL AS NetworkMode, NULL AS RelativePosition
+        FROM [dbo].[DvrpTaskEnded]
+        WHERE [Link] = ?
+
+        UNION ALL
+
+        Select [Time], [Type], [Person], [Link], NULL AS ActType, NULL AS LegMode, [DvrpVehicle], [TaskType], [TaskIndex], [DvrpMode], NULL AS X, NULL AS Y, NULL AS Mode, NULL AS Request, NULL AS Vehicle, NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, NULL AS NetworkMode, NULL AS RelativePosition
+        FROM [dbo].[DvrpTaskStarted]
+        WHERE [Link] = ?
+
+        UNION ALL
+
+        Select [Time], [Type], NULL AS Person, [Link],  NULL AS ActType, NULL AS LegMode, NULL AS DvrpVehicle, NULL AS TaskType, NULL AS TaskIndex, NULL AS DvrpMode, NULL AS X, NULL AS Y, NULL AS Mode, NULL AS Request, [Vehicle], NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, NULL AS NetworkMode, NULL AS RelativePosition
+        FROM [dbo].[EnteredLink]
+        WHERE [Link] = ?
+
+        UNION ALL
+
+        Select [Time], [Type], NULL AS Person, [Link],  NULL AS ActType, NULL AS LegMode, NULL AS DvrpVehicle, NULL AS TaskType, NULL AS TaskIndex, NULL AS DvrpMode, NULL AS X, NULL AS Y, NULL AS Mode, NULL AS Request, [Vehicle], NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, NULL AS NetworkMode, NULL AS RelativePosition
+        FROM [dbo].[LeftLink]
+        WHERE [Link] = ?
+
+        UNION ALL
+
+        Select [Time], [Type], [Person], [Link], NULL AS ActType, NULL AS LegMode, NULL AS DvrpVehicle, NULL AS TaskType, NULL AS TaskIndex, NULL AS DvrpMode, NULL AS X, NULL AS Y, NULL AS Mode, NULL AS Request, [Vehicle], NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, [NetworkMode], [RelativePosition]
+        FROM [dbo].[VehicleEntersTraffic]
+        WHERE [Link] = ?
+
+        UNION ALL
+
+        Select [Time], [Type], [Person], [Link], NULL AS ActType, NULL AS LegMode, NULL AS DvrpVehicle, NULL AS TaskType, NULL AS TaskIndex, NULL AS DvrpMode, NULL AS X, NULL AS Y, NULL AS Mode, NULL AS Request, [Vehicle], NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, [NetworkMode], [RelativePosition]
+        FROM [dbo].[VehicleLeavesTraffic]
+        WHERE [Link] = ?
+
+        ORDER BY [Time];
     """
 
-    cursor.execute(query, (link_id, link_id))
+    # 10 parameters supplied 
+    parameters = (link_id,) * 10
+
+    cursor.execute(query, parameters)
     results = cursor.fetchall()
+
+    # Close the cursor after fetching results
+    cursor.close()
+
 
     # Convert [Time] to hours, minutes, seconds
     results = [(seconds_to_hms(row[0]), *row[1:]) for row in results]
 
     return results
 
-def search_events_by_time_range(link_id, start_time, end_time):
+def search_events_by_time_range(search_value, start_time, end_time):
     cursor = conn.cursor()
     
     query = f"""
 
-        SELECT
-            [Time],
-            [Type],
-            [Person],
-            NULL AS [Amount],
-            NULL AS [Purpose],
-            NULL AS [TransactionPartner],
-            [Link],
-            NULL AS [X],
-            NULL AS [Y],
-            [ActType]
-        FROM
-            [dbo].[ActEnd]
-        WHERE
-            [Link] = ?
+        Select [Time], [Type], [Person], [Link], [ActType], NULL AS LegMode, NULL AS DvrpVehicle, NULL AS TaskType, NULL AS TaskIndex, NULL AS DvrpMode, NULL AS X, NULL AS Y, NULL AS Mode, NULL AS Request, NULL AS Vehicle, NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, NULL AS NetworkMode, NULL AS RelativePosition
+        FROM [dbo].[ActEnd]
+        WHERE 
+            [Link] = ? AND 
+            [Time] BETWEEN ? AND ?
 
         UNION ALL
 
-        SELECT
-            [Time],
-            [Type],
-            [Person],
-            NULL AS [Amount],
-            NULL AS [Purpose],
-            NULL AS [TransactionPartner],
-            [Link],
-            [X],
-            [Y],
-            [ActType]
-        FROM
-            [dbo].[ActStart]
-        WHERE
-            [Link] = ? AND
+        Select [Time], [Type], [Person], [Link], [ActType], NULL AS LegMode, NULL AS DvrpVehicle, NULL AS TaskType, NULL AS TaskIndex, NULL AS DvrpMode, [X], [Y], NULL AS Mode, NULL AS Request, NULL AS Vehicle, NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, NULL AS NetworkMode, NULL AS RelativePosition
+        FROM [dbo].[ActStart]
+        WHERE 
+            [Link] = ? AND 
             [Time] BETWEEN ? AND ?
-            
-        ORDER BY
+
+        UNION ALL
+
+        Select [Time], [Type], [Person], [Link], NULL AS ActType, [LegMode], NULL AS DvrpVehicle, NULL AS TaskType, NULL AS TaskIndex, NULL AS DvrpMode, NULL AS X, NULL AS Y, NULL AS Mode, NULL AS Request, NULL AS Vehicle, NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, NULL AS NetworkMode, NULL AS RelativePosition
+        FROM [dbo].[Arrival]
+        WHERE 
+            [Link] = ? AND 
+            [Time] BETWEEN ? AND ?
+
+        UNION ALL
+
+        Select [Time], [Type], [Person], [Link], NULL AS ActType, [LegMode], NULL AS DvrpVehicle, NULL AS TaskType, NULL AS TaskIndex, NULL AS DvrpMode, NULL AS X, NULL AS Y, NULL AS Mode, NULL AS Request, NULL AS Vehicle, NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, NULL AS NetworkMode, NULL AS RelativePosition
+        FROM [dbo].[Departure]
+        WHERE 
+            [Link] = ? AND 
+            [Time] BETWEEN ? AND ?
+
+        UNION ALL
+
+        Select [Time], [Type], [Person], [Link], NULL AS ActType, NULL AS LegMode, [DvrpVehicle], [TaskType], [TaskIndex], [DvrpMode], NULL AS X, NULL AS Y, NULL AS Mode, NULL AS Request, NULL AS Vehicle, NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, NULL AS NetworkMode, NULL AS RelativePosition
+        FROM [dbo].[DvrpTaskEnded]
+        WHERE 
+            [Link] = ? AND 
+            [Time] BETWEEN ? AND ?
+
+        UNION ALL
+
+        Select [Time], [Type], [Person], [Link], NULL AS ActType, NULL AS LegMode, [DvrpVehicle], [TaskType], [TaskIndex], [DvrpMode], NULL AS X, NULL AS Y, NULL AS Mode, NULL AS Request, NULL AS Vehicle, NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, NULL AS NetworkMode, NULL AS RelativePosition
+        FROM [dbo].[DvrpTaskStarted]
+        WHERE 
+            [Link] = ? AND 
+            [Time] BETWEEN ? AND ?
+
+        UNION ALL
+
+        Select [Time], [Type], NULL AS Person, [Link],  NULL AS ActType, NULL AS LegMode, NULL AS DvrpVehicle, NULL AS TaskType, NULL AS TaskIndex, NULL AS DvrpMode, NULL AS X, NULL AS Y, NULL AS Mode, NULL AS Request, [Vehicle], NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, NULL AS NetworkMode, NULL AS RelativePosition
+        FROM [dbo].[EnteredLink]
+        WHERE 
+            [Link] = ? AND 
+            [Time] BETWEEN ? AND ?
+
+        UNION ALL
+
+        Select [Time], [Type], NULL AS Person, [Link],  NULL AS ActType, NULL AS LegMode, NULL AS DvrpVehicle, NULL AS TaskType, NULL AS TaskIndex, NULL AS DvrpMode, NULL AS X, NULL AS Y, NULL AS Mode, NULL AS Request, [Vehicle], NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, NULL AS NetworkMode, NULL AS RelativePosition
+        FROM [dbo].[LeftLink]
+        WHERE 
+            [Link] = ? AND 
+            [Time] BETWEEN ? AND ?
+
+        UNION ALL
+
+        Select [Time], [Type], [Person], [Link], NULL AS ActType, NULL AS LegMode, NULL AS DvrpVehicle, NULL AS TaskType, NULL AS TaskIndex, NULL AS DvrpMode, NULL AS X, NULL AS Y, NULL AS Mode, NULL AS Request, [Vehicle], NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, [NetworkMode], [RelativePosition]
+        FROM [dbo].[VehicleEntersTraffic]
+        WHERE 
+            [Link] = ? AND 
+            [Time] BETWEEN ? AND ?
+
+        UNION ALL
+
+        Select [Time], [Type], [Person], [Link], NULL AS ActType, NULL AS LegMode, NULL AS DvrpVehicle, NULL AS TaskType, NULL AS TaskIndex, NULL AS DvrpMode, NULL AS X, NULL AS Y, NULL AS Mode, NULL AS Request, [Vehicle], NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, [NetworkMode], [RelativePosition]
+        FROM [dbo].[VehicleLeavesTraffic]
+        WHERE 
+            [Link] = ? AND 
+            [Time] BETWEEN ? AND ?
+
+        ORDER BY 
             [Time]
     """
 
@@ -215,8 +327,14 @@ def search_events_by_time_range(link_id, start_time, end_time):
     start_seconds = sum(x * int(t) for x, t in zip([3600, 60, 1], start_time.split(':')))
     end_seconds = sum(x * int(t) for x, t in zip([3600, 60, 1], end_time.split(':')))
 
-    cursor.execute(query, (link_id, link_id, start_seconds, end_seconds))
+    # 10 parameters supplied 
+    parameters = (search_value, start_seconds, end_seconds,) * 10
+
+    cursor.execute(query, parameters)
     results = cursor.fetchall()
+
+    # Close the cursor after fetching results
+    cursor.close()
 
     # Convert [Time] to hours, minutes, seconds
     results = [(seconds_to_hms(row[0]), *row[1:]) for row in results]
