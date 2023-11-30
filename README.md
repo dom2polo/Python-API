@@ -22,19 +22,19 @@
 
 - Use the search boxes, buttons, or other components on the web page to perform the following actions:
 
-a. Search events by person ID:
- Enter a person ID and click the search button.
- View the displayed events sorted by time.
- 
-b. Search events by link ID:
-Enter a link ID and click the search button.
-View the displayed events sorted by time.
-
-c. Show link details:
-After searching events by link ID, click on a link to view details like freespeed, capacity, and modes.
-
-d. Get events in a specific time range:
-Choose the time range (e.g., between 7:00 and 8:00 AM) and enter a link ID.
-Click the search button to view events within the specified time range for the given link.
+   a. Search events by person ID:
+    Enter a person ID and click the search button.
+    View the displayed events sorted by time.
+    
+   b. Search events by link ID:
+   Enter a link ID and click the search button.
+   View the displayed events sorted by time.
+   
+   c. Show link details:
+   After searching events by link ID, click on a link to view details like freespeed, capacity, and modes.
+   
+   d. Get events in a specific time range:
+   Choose the time range (e.g., between 7:00 and 8:00 AM) and enter a link ID.
+   Click the search button to view events within the specified time range for the given link.
 
 
