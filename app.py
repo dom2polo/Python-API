@@ -49,10 +49,11 @@ def seconds_to_hms(seconds):
     minutes, seconds = divmod(remainder, 60)
     return f'{int(hours)}:{int(minutes):02d}:{int(seconds):02d}'
 
-@app.route('/link_details/<link_id>', methods=['GET'])
+@app.route('/link_details/<link_id>/', methods=['GET'])
 @app.route('/link_details/', methods=['GET'])
-def link_details(link_id):
-    if link_id is not None:
+def link_details(link_id=None):
+    cursor = conn.cursor()
+    if link_id:
         # Use the provided link_id
         link_details = get_link_details(link_id)
     elif 'person_value' in request.args:
@@ -60,10 +61,11 @@ def link_details(link_id):
         person_value = request.args['person_value']
         link_details = get_link_details_for_person(person_value)
     else:
-        # Use the provided link_id
-        link_details = get_link_details(link_id)
+        # Handle the case when neither link_id nor person_value is provided
+        link_details = None
 
     return render_template('link_details.html', link_details=link_details)
+
 
 def get_link_details(link_id):
     cursor = conn.cursor()
@@ -71,79 +73,22 @@ def get_link_details(link_id):
     # Modify the query to retrieve link details based on the provided link ID
     query = f"""
 
-        Select [Time], [Type], [Person], [Link], [ActType], NULL AS LegMode, NULL AS DvrpVehicle, NULL AS TaskType, NULL AS TaskIndex, NULL AS DvrpMode, NULL AS X, NULL AS Y, NULL AS Mode, NULL AS Request, NULL AS Vehicle, NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, NULL AS NetworkMode, NULL AS RelativePosition
-        FROM [dbo].[ActEnd]
-        WHERE [Link] = ?
-
-        UNION ALL
-
-        Select [Time], [Type], [Person], [Link], [ActType], NULL AS LegMode, NULL AS DvrpVehicle, NULL AS TaskType, NULL AS TaskIndex, NULL AS DvrpMode, [X], [Y], NULL AS Mode, NULL AS Request, NULL AS Vehicle, NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, NULL AS NetworkMode, NULL AS RelativePosition
-        FROM [dbo].[ActStart]
-        WHERE [Link] = ?
-
-        UNION ALL
-
-        Select [Time], [Type], [Person], [Link], NULL AS ActType, [LegMode], NULL AS DvrpVehicle, NULL AS TaskType, NULL AS TaskIndex, NULL AS DvrpMode, NULL AS X, NULL AS Y, NULL AS Mode, NULL AS Request, NULL AS Vehicle, NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, NULL AS NetworkMode, NULL AS RelativePosition
-        FROM [dbo].[Arrival]
-        WHERE [Link] = ?
-
-        UNION ALL
-
-        Select [Time], [Type], [Person], [Link], NULL AS ActType, [LegMode], NULL AS DvrpVehicle, NULL AS TaskType, NULL AS TaskIndex, NULL AS DvrpMode, NULL AS X, NULL AS Y, NULL AS Mode, NULL AS Request, NULL AS Vehicle, NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, NULL AS NetworkMode, NULL AS RelativePosition
-        FROM [dbo].[Departure]
-        WHERE [Link] = ?
-
-        UNION ALL
-
-        Select [Time], [Type], [Person], [Link], NULL AS ActType, NULL AS LegMode, [DvrpVehicle], [TaskType], [TaskIndex], [DvrpMode], NULL AS X, NULL AS Y, NULL AS Mode, NULL AS Request, NULL AS Vehicle, NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, NULL AS NetworkMode, NULL AS RelativePosition
-        FROM [dbo].[DvrpTaskEnded]
-        WHERE [Link] = ?
-
-        UNION ALL
-
-        Select [Time], [Type], [Person], [Link], NULL AS ActType, NULL AS LegMode, [DvrpVehicle], [TaskType], [TaskIndex], [DvrpMode], NULL AS X, NULL AS Y, NULL AS Mode, NULL AS Request, NULL AS Vehicle, NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, NULL AS NetworkMode, NULL AS RelativePosition
-        FROM [dbo].[DvrpTaskStarted]
-        WHERE [Link] = ?
-
-        UNION ALL
-
-        Select [Time], [Type], NULL AS Person, [Link],  NULL AS ActType, NULL AS LegMode, NULL AS DvrpVehicle, NULL AS TaskType, NULL AS TaskIndex, NULL AS DvrpMode, NULL AS X, NULL AS Y, NULL AS Mode, NULL AS Request, [Vehicle], NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, NULL AS NetworkMode, NULL AS RelativePosition
-        FROM [dbo].[EnteredLink]
-        WHERE [Link] = ?
-
-        UNION ALL
-
-        Select [Time], [Type], NULL AS Person, [Link],  NULL AS ActType, NULL AS LegMode, NULL AS DvrpVehicle, NULL AS TaskType, NULL AS TaskIndex, NULL AS DvrpMode, NULL AS X, NULL AS Y, NULL AS Mode, NULL AS Request, [Vehicle], NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, NULL AS NetworkMode, NULL AS RelativePosition
-        FROM [dbo].[LeftLink]
-        WHERE [Link] = ?
-
-        UNION ALL
-
-        Select [Time], [Type], [Person], [Link], NULL AS ActType, NULL AS LegMode, NULL AS DvrpVehicle, NULL AS TaskType, NULL AS TaskIndex, NULL AS DvrpMode, NULL AS X, NULL AS Y, NULL AS Mode, NULL AS Request, [Vehicle], NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, [NetworkMode], [RelativePosition]
-        FROM [dbo].[VehicleEntersTraffic]
-        WHERE [Link] = ?
-
-        UNION ALL
-
-        Select [Time], [Type], [Person], [Link], NULL AS ActType, NULL AS LegMode, NULL AS DvrpVehicle, NULL AS TaskType, NULL AS TaskIndex, NULL AS DvrpMode, NULL AS X, NULL AS Y, NULL AS Mode, NULL AS Request, [Vehicle], NULL AS Amount, NULL AS Purpose, NULL AS TransactionPartner, NULL AS Distance, [NetworkMode], [RelativePosition]
-        FROM [dbo].[VehicleLeavesTraffic]
-        WHERE [Link] = ?
-
-        ORDER BY [Time];
+        Select [ID], [FromId], [Length], [Freespeed], [Capacity], [Permlanes], [Oneway], [Modes]
+        FROM [dbo].[Links]
+        WHERE [ID] = ?
 
     """
-
-    # 10 parameters supplied 
-    parameters = (link_id,) * 10
-
+    parameters = (link_id,)
     cursor.execute(query, parameters)
     link_details = cursor.fetchall()
 
+    # Print the query and parameters for debugging
+    print("Executing Query:", query)
+    print("Parameters:", parameters)
+    print("Results", link_details)
+
     # Close the cursor after fetching results
     cursor.close()
-
-    # Convert [Time] to hours, minutes, seconds
-    link_details = [(seconds_to_hms(row[0]), *row[1:]) for row in link_details]
 
     return link_details
 
@@ -327,7 +272,6 @@ def search_events_by_link_id(link_id):
 
     # Close the cursor after fetching results
     cursor.close()
-
 
     # Convert [Time] to hours, minutes, seconds
     results = [(seconds_to_hms(row[0]), *row[1:]) for row in results]
