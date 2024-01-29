@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Transportation Search</title>
+    <title>Transportation Search</title>    
+    <!-- Link to the external CSS file -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
 </head>
 <body>
     <h1>Transportation Search</h1>
@@ -39,6 +42,8 @@
             <label for="end_time">End Time:</label>
             <input type="time" id="end_time" name="end_time">
         </div>
+
+        <!-- Display input fields for link details -->
 
         <button type="submit">Search</button>
     </form>
