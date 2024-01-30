@@ -25,6 +25,7 @@
       a. Search events by person ID:
        Enter a person ID and click the search button.
        View the displayed events sorted by time.
+<<<<<<< HEAD
       
    ![Person ID](images/personID.png)
 
@@ -33,14 +34,28 @@
       View the displayed events sorted by time.
 
    ![Person ID](images/linkID.png)
+=======
       
       c. Show link details:
       After searching events by link ID, click on a link to view details like freespeed, capacity, and modes.
 
+<<<<<<< HEAD
    ![Person ID](images/linkIdOutput.png)
       
+=======
+     ![Person ID]("C:\Users\domin\OneDrive\Pictures\Screenshots\linkIdOutput.png")
+>>>>>>> 69cfe6cf9da0720b0621807d131be977b00719ff
       d. Get events in a specific time range:
       Choose the time range (e.g., between 7:00 and 8:00 AM) and enter a link ID.
       Click the search button to view events within the specified time range for the given link.
 
+<<<<<<< HEAD
    ![Person ID](images//Range.png)
+=======
+     ![Person ID]("C:\Users\domin\OneDrive\Pictures\Screenshots\Range.png")****
+
+UI/UX
+
+
+
+>>>>>>> 69cfe6cf9da0720b0621807d131be977b00719ff
