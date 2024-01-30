@@ -1,4 +1,5 @@
-# trasnportation-events
+# transportation-events
+- In this project, I created a python web-based API integration to query information from a MSSQL database and using Flask as web application framework. The goal is to learn about using Python and SQL as a way to display our data in a user-friendly environment for others to search through. 
 
 ## Running the Application
 
