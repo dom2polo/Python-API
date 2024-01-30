@@ -34,7 +34,8 @@
   ![Person ID](images/linkID.png)
       
       c. Show link details:
-      After searching events by link ID, click on a link to view details like freespeed, capacity, and modes.
+      After searching events by link ID,
+      click on a link to view details like freespeed, capacity, and modes.
   ![Person ID](images/linkIdOutput.png)
       
       d. Get events in a specific time range:
